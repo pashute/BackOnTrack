@@ -3,7 +3,7 @@
     <!-- Tabs Header -->
     <div class="border-b border-gray-200">
       <div class="flex overflow-x-auto">
-        <button
+        <div
           v-for="tab in tabs"
           :key="tab.id"
           @click="activeTab = tab.id"
@@ -13,6 +13,8 @@
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-gray-600 hover:text-gray-800'
           ]"
+          role="tab"
+          tabindex="0"
         >
           {{ tab.title }}
           <button
@@ -21,7 +23,7 @@
           >
             ×
           </button>
-        </button>
+        </div>
       </div>
     </div>
 
@@ -81,6 +83,7 @@ const closeAllTabs = () => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
 /* Prose styling for HTML content */
 .prose h2 {
   @apply text-xl font-bold text-gray-800 mb-3;
