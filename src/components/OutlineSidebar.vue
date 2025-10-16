@@ -22,15 +22,6 @@
       </div>
     </div>
 
-    <!-- Sidebar Footer -->
-    <div class="p-4 border-t border-gray-200 bg-gray-50">
-      <button
-        @click="createNewBranch"
-        class="w-full px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-      >
-        + New Branch
-      </button>
-    </div>
   </aside>
 </template>
 
@@ -44,12 +35,5 @@ const conversation = computed(() => conversationStore.conversation)
 
 const switchToBranch = (branchId) => {
   conversationStore.switchBranch(branchId)
-}
-
-const createNewBranch = () => {
-  const branchName = prompt('Enter branch name:')
-  if (branchName) {
-    conversationStore.createBranch(branchName, conversationStore.conversation.activeBranchId)
-  }
 }
 </script>
