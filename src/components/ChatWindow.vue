@@ -30,16 +30,7 @@
         </div>
       </div>
 
-      <!-- Typing indicator (placeholder for AI response) -->
-      <div v-if="isAITyping" class="flex justify-start">
-        <div class="bg-white text-gray-800 border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-          <div class="flex space-x-2">
-            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-          </div>
-        </div>
-      </div>
+      <!-- No typing indicator during mock verification flow -->
     </div>
 
     <!-- Input Area -->
@@ -86,7 +77,6 @@ import { useConversationStore } from '../stores/conversationStore'
 
 const conversationStore = useConversationStore()
 const userInput = ref('')
-const isAITyping = ref(false)
 const messagesContainer = ref(null)
 
 const messages = conversationStore.messages
@@ -111,24 +101,49 @@ const sendMessage = async () => {
   await nextTick()
   scrollToBottom()
 
-  // Simulate AI response (will be replaced with actual API call)
-  isAITyping.value = true
-  setTimeout(() => {
+  // Verification-first logic
+  if (conversationStore.isVerifying) {
+    // First time or during verification: produce/continue verification prompt
+    let aiText
+    if (!conversationStore.verificationConfirmed && conversationStore.proposedStages.length === 0) {
+      // Initial analysis step -> propose main topic + stages (not shown), return a verification question
+      aiText = conversationStore.analyzeForVerification(userMessage)
+    } else {
+      // Process the user's verification reply
+      const result = conversationStore.processVerificationReply(userMessage)
+      aiText = result.aiMessage
+    }
+    conversationStore.addMessage({ sender: 'AI', content: aiText })
+    await nextTick()
+    scrollToBottom()
+    return
+  }
+
+  // Post-verification: staged responses
+  const current = conversationStore.highlights.find(h => h.status === 'Current')
+  if (current) {
+    // Respond for the current stage (mock placeholder)
     conversationStore.addMessage({
       sender: 'AI',
-      content: 'This is a placeholder response. Backend integration coming soon.'
+      content: `Answer for stage: ${current.text}. (mock content)`
     })
-    isAITyping.value = false
-    nextTick(() => scrollToBottom())
-  }, 1500)
+    await nextTick(); scrollToBottom()
+  }
 }
 
 const continueConversation = () => {
-  conversationStore.addMessage({
-    sender: 'User',
-    content: '[Continue]'
-  })
-  // Will trigger AI to continue with next highlight
+  // During verification, continue prompts
+  if (conversationStore.isVerifying) {
+    conversationStore.addMessage({ sender: 'User', content: '[Continue Verification]' })
+    const result = conversationStore.processVerificationReply('')
+    conversationStore.addMessage({ sender: 'AI', content: result.aiMessage })
+    return
+  }
+  // After verification, advance to next stage and answer it
+  const next = conversationStore.advanceNextStage()
+  if (next) {
+    conversationStore.addMessage({ sender: 'AI', content: `Stage: ${next.text}. (mock content)` })
+  }
 }
 
 const goBack = () => {

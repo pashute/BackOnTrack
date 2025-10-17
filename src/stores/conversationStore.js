@@ -13,6 +13,12 @@ export const useConversationStore = defineStore('conversation', () => {
   const currentBranch = ref(null)
   const messages = ref([])
   const highlights = ref([])
+  
+  // Verification state
+  const isVerifying = ref(true) // Start in verification mode
+  const verificationConfirmed = ref(false)
+  const proposedMainTopic = ref('')
+  const proposedStages = ref([]) // array of { text }
 
   // Actions
   function initializeConversation() {
@@ -29,6 +35,9 @@ export const useConversationStore = defineStore('conversation', () => {
       }]
     }
     currentBranch.value = conversation.value.branchHistory[0]
+    // Seed a default verification analysis (mock)
+    proposedMainTopic.value = ''
+    proposedStages.value = []
   }
 
   function addMessage(message) {
@@ -54,6 +63,7 @@ export const useConversationStore = defineStore('conversation', () => {
     }
     highlights.value.push(newHighlight)
     currentBranch.value?.highlights.push(newHighlight)
+    return newHighlight
   }
 
   function updateHighlightStatus(highlightId, status) {
@@ -87,16 +97,81 @@ export const useConversationStore = defineStore('conversation', () => {
     }
   }
 
+  // Verification API (mock)
+  function analyzeForVerification(userText) {
+    // Very simple mock analysis: infer a main topic and stages, not shown to user yet
+    proposedMainTopic.value = 'Woodchuck question understanding'
+    proposedStages.value = [
+      { text: 'woodchuck info' },
+      { text: 'biology' },
+      { text: 'chucking ability' }
+    ]
+    // Return a verification prompt placeholder
+    return `Verification: is this a question about the biology of the woodchuck animal? (Yes/No)`
+  }
+
+  function processVerificationReply(userText) {
+    // If user confirms with a yes-like string, finalize
+    const normalized = (userText || '').trim().toLowerCase()
+    const yesValues = ['yes', 'y', 'correct', 'sure', 'ok', 'okay']
+    if (yesValues.includes(normalized)) {
+      verificationConfirmed.value = true
+      isVerifying.value = false
+      // Build highlights from proposed stages
+      finalizeVerification()
+      // Return next AI message indicating start of staged response
+      const first = highlights.value[0]
+      if (first) {
+        updateHighlightStatus(first.id, 'Current')
+        return { aiMessage: `Great, proceeding. Stage 1: ${first.text}.`, done: true }
+      }
+      return { aiMessage: 'Great, proceeding.', done: true }
+    }
+    // Otherwise continue offering clarifications (mock options)
+    return { aiMessage: 'Do you mean: option1 (biology) or option2 (general info)?', done: false }
+  }
+
+  function finalizeVerification() {
+    // Create highlights from proposedStages if not already
+    if (highlights.value.length === 0 && proposedStages.value.length > 0) {
+      proposedStages.value.forEach((s) => {
+        addHighlight({ text: s.text, direction: 'Response', status: 'Planned' })
+      })
+    }
+  }
+
+  function advanceNextStage() {
+    // Find current and planned
+    const current = highlights.value.find(h => h.status === 'Current')
+    if (current) {
+      updateHighlightStatus(current.id, 'Discussed')
+    }
+    const next = highlights.value.find(h => h.status === 'Planned')
+    if (next) {
+      updateHighlightStatus(next.id, 'Current')
+      return next
+    }
+    return null
+  }
+
   return {
     conversation,
     currentBranch,
     messages,
     highlights,
+    isVerifying,
+    verificationConfirmed,
+    proposedMainTopic,
+    proposedStages,
     initializeConversation,
     addMessage,
     addHighlight,
     updateHighlightStatus,
     createBranch,
-    switchBranch
+    switchBranch,
+    analyzeForVerification,
+    processVerificationReply,
+    finalizeVerification,
+    advanceNextStage
   }
 })
