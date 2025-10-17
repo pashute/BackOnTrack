@@ -63,8 +63,8 @@ This component provides the user with the structural map of the conversation.
 | **FR3.2.2** | User Request Highlight | The main topic of each branch should be the first to be discussed in the discussion stages, and should be the first highlight for that branch. |
 | **FR3.2.3** | AI Response Structure | For each branch, in response to the user's input, the AI goes through two steps of discussion iterations: |
 | **FR3.2.3.1** | verification step | a. Verification and clarification discussion of the user's intent. The step ends when the user is satisfied with BackOnTrack's understanding. | 
-| **FR3.2.3.2** | response stages | b. An ongoing reply discussion, where the response is presented in stages, advancing from one stage to the next, jumping to different stages, or even going offline, with the ability to continue where we left off, upon the user's request, and BackOnTrack's reminders. |
-| **FR3.2.3.2.** | Verification Highlights | Shows the Highlight(s) of the user's request, as modified and inferred from verification step (FR1.3). |
+| **FR3.2.3.2** | response stages | b. An ongoing reply discussion, where the response is presented in stages, upon the user's request advancing from one stage to the next, jumping to different stages, or even going off topic, with the ability to continue where we left off. When off topic BackOnTrack reminds the user where we left off. |
+| **FR3.2.3.2.** | Verification Highlights | Shows the Highlight(s) of the user's request, as modified and inferred from the verification step (FR1.3). |
 | **FR3.2.3.2** | Response Highlights | The main list of Highlights (the Answer Blueprint) planned for the conversation, clearly showing which have been discussed (✓) which are planned, and which is currently being discussed. |
 | **FR3.2.3.3** | Current Location Marker | The currently being discussed Highlight must be clearly and distinctly marked (e.g., distinct color, font size, bold text). |
 
